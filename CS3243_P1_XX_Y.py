@@ -42,7 +42,7 @@ class Puzzle(object):
                     if self.goal_test(child.state):
                         return child.solution
                     frontier.appendleft(child)
-        return ["UNSOLVABLE"]   # return failure
+        # return ["UNSOLVABLE"]   # return failure
 
     # def UCS(self):
     #     return
@@ -122,7 +122,9 @@ class Node(object):
         self.path_cost = path_cost
         self.solution = solution
         self.zero_position = zero_position
+        self.dimension = len(self.state)
         self.possible_actions = self.filter_actions(["LEFT", "RIGHT", "UP", "DOWN"])
+        
     
     def __eq__(self, state):
         return state == self.str_state
@@ -132,11 +134,11 @@ class Node(object):
             zero_position of current state '''
         if self.zero_position[0] == 0:  # 0 at the top row
             possible_actions.remove("DOWN")
-        elif self.zero_position[0] == (n - 1):    # 0 at bottum row
+        elif self.zero_position[0] == (self.dimension - 1):    # 0 at bottum row
             possible_actions.remove("UP")
         if self.zero_position[1] == 0:  # 0 at the leftmost col.
             possible_actions.remove("RIGHT")
-        elif self.zero_position[1] == (n - 1):    # 0 at rightmost col.
+        elif self.zero_position[1] == (self.dimension - 1):    # 0 at rightmost col.
             possible_actions.remove("LEFT")
         return possible_actions
 
