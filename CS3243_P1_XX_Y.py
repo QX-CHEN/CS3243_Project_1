@@ -26,6 +26,8 @@ class Puzzle(object):
     # you may add more functions if you think is useful
     def BFS(self):
         node = Node(self.init_state, self.init_zero_position)
+        if not self.is_solvable(node):
+            return ["UNSOLVABLE"]
         if self.goal_test(node.state):
             return node.solution
         frontier = deque([node])  # queue (insert left, pop right)
@@ -84,6 +86,34 @@ class Puzzle(object):
             for j in range(len(state)):
                 if state[i][j] == 0:
                     return (i,j)
+    
+    def inversion(self, state):
+        flatten_list = self.flatten(state)
+        count = 0
+        for i in range(len(flatten_list) - 1, 0, -1):
+            for j in range(i - 1, -1, -1):
+                if flatten_list[j] > flatten_list[i]:
+                    count += 1
+        # print(count)
+        return count
+    
+    def flatten(self, state):
+        flatten_list = []
+        for i in range(len(state)):
+            for j in range(len(state)):
+                if state[i][j]:     # non-zero entry
+                    flatten_list.append(state[i][j])
+        # print(flatten_list)
+        return flatten_list
+
+    def is_solvable(self, node):
+        if len(node.state) % 2:   # n is odd
+            return False if self.inversion(node.state) % 2 else True 
+        else:
+            # print(self.inversion(node.state))
+            # print(node.zero_position[0])
+            return  (self.inversion(node.state) + node.zero_position[0]) % 2
+
 
 class Node(object):
     def __init__(self, state, zero_position, path_cost = 0, solution = []):
