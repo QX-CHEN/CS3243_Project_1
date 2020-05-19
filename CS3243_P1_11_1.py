@@ -4,9 +4,6 @@
 import os
 import sys
 from collections import deque
-from copy import deepcopy
-from time import time
-# import heapq
 # Running script on your own - given code can be run with the command:
 # python file.py, ./path/to/init_state.txt ./output/output.txt
 
@@ -44,15 +41,12 @@ class Puzzle(object):
             node = frontier.pop()
             explored.add(node.state)
             for act in node.possible_actions:
-                # print(act)
                 child = self.child_node(node, act)
                 if (child.state not in explored):
                     explored.add(child.state)
                     if self.goal_test(child.state):
-                        # print(child.path_cost)
                         return child.solution
                     frontier.appendleft(child)
-        return ["UNSOLVABLE"]   # return failure
 
     def goal_test(self, state):
         return self.goal_state == state
@@ -63,9 +57,7 @@ class Puzzle(object):
 
         new_state = node.state
         new_solution = node.solution[:]
-        # print(new_state)
-        # print(node.zero_position)
-        # print(act)
+
         if act == "LEFT":
             new_solution.append("LEFT")
             new_zero_position = node.zero_position + 1
@@ -79,7 +71,6 @@ class Puzzle(object):
             new_solution.append("DOWN")
             new_zero_position = node.zero_position - self.dimension
         
-        # print(new_zero_position)
         temp = node.state[new_zero_position]
         if new_zero_position < node.zero_position:
             new_state = node.state[:new_zero_position] + (0,) + node.state[new_zero_position + 1:node.zero_position] \
@@ -87,7 +78,6 @@ class Puzzle(object):
         else:
             new_state = node.state[:node.zero_position] + (temp,) + node.state[node.zero_position + 1:new_zero_position] \
              + (0,) + node.state[new_zero_position + 1:]
-        # print(new_state)
         return Node(new_state, self.dimension, new_zero_position, node.path_cost + 1, new_solution)
     
     def zero_position(self, state):
@@ -111,16 +101,12 @@ class Puzzle(object):
                     continue
                 if state[j] > state[i]:
                     count += 1
-        # print(count)
         return count
 
     def is_solvable(self, node):
         if len(node.state) % 2:   # n is odd
-            # print(self.inversion(node.state))
             return False if self.inversion(node.state) % 2 else True 
         else:
-            # print(self.inversion(node.state))
-            # print(node.zero_position[0])
             return  (self.inversion(node.state) + node.zero_position // self.dimension) % 2
 
 
@@ -133,9 +119,6 @@ class Node(object):
         self.zero_position = zero_position
         self.possible_actions = self.filter_actions(["LEFT", "RIGHT", "UP", "DOWN"])
     
-    def __eq__(self, state):
-        return state == self.state
-
     def filter_actions(self, possible_actions):
         ''' Filter impossible actions based on 
             zero_position of current state '''
@@ -197,18 +180,12 @@ if __name__ == "__main__":
         goal_state[(i-1)//n][(i-1)%n] = i
     goal_state[n - 1][n - 1] = 0
 
-    # Added to measure time
     puzzle = Puzzle(init_state, goal_state)
-    start = time()
     ans = puzzle.solve()
-    end = time()
-    time_taken = end - start
 
     with open(sys.argv[2], 'a') as f:   # change from append mode to overwrite
         for answer in ans:
             f.write(answer+'\n')
-        f.write("time taken : " + str(time_taken) + "\n")
-        f.write("------------------------------------\n")
 
 
 
