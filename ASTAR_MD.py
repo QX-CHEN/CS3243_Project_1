@@ -172,7 +172,7 @@ class Node(object):
     
     def h(self):
         ''' heuristic function '''
-        return self.manhattan_distance()
+        return self.manhattan_distance_with_linear_conflict()
     
     def manhattan_distance(self):
         distance = 0
@@ -185,6 +185,28 @@ class Node(object):
                 right_row, right_col = right_position // self.dimension, right_position % self.dimension
                 distance += (abs(curr_row - right_row) + abs(curr_col - right_col))
         return distance
+
+    def manhattan_distance_with_linear_conflict(self):
+        score = 0
+        for i in range(len(self.state)):
+            if not self.state[i]:   # zero entry
+                continue
+            else:
+                # Mamhattan distance
+                right_position = self.state[i] - 1 
+                curr_row, curr_col = i // self.dimension, i % self.dimension
+                right_row, right_col = right_position // self.dimension, right_position % self.dimension
+                # Linear conflict
+                conflict = 0
+                if (i + 1) % self.dimension:
+                    if self.state[i] == (i + 2) and self.state[i + 1] == (i + 1):
+                        conflict += 1
+                if i < self.dimension * (self.dimension - 1):
+                    if self.state[i] == (i + 1 + self.dimension) and self.state[i + self.dimension] == (i + 1):
+                        conflict += 1
+
+                score += (abs(curr_row - right_row) + abs(curr_col - right_col) + 2 * conflict)
+        return score
 
     def h1(self):   # misplaced tiles
         count = 0
@@ -211,10 +233,6 @@ class Node(object):
         elif (self.zero_position + 1) % self.dimension == 0:    # 0 at rightmost col.
             possible_actions.remove("LEFT")
         return possible_actions
-
-
-
-            
 
 
 if __name__ == "__main__":
