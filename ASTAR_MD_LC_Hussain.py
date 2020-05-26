@@ -190,31 +190,58 @@ class Node(object):
         score = 0
         conflict = 0
         for i in range(len(self.state)):
-            # Linear conflict              
+            # Linear conflict
             if i % self.dimension == 0: #check row
                 for j in range(self.dimension):
-                    if(self.state[i+j] != 0 and self.state[i+j] != i + j + 1): #if not zero tile and if the tile is not in the goal position
+                    #print(self.state[i+j],i+j+1)
+                    if(self.state[i+j] != 0): #if not zero tile and if the tile is not in the goal position
                         tile_goalRow = (self.state[i+j] - 1) // self.dimension #current tile's goal row
-                        if(tile_goalRow == i): # if the tile is in the correct goal row
-                            k = j + 1
+                        if(tile_goalRow == i//self.dimension): # if the tile is in the correct goal row
+                            k = 0
                             while k < self.dimension: #compare with the other tiles in the row
                                 k_tile_goalRow = (self.state[i+k] - 1) // self.dimension #other tile's goal row
-                                if(k_tile_goalRow == i and self.state[i+j] > self.state[i+k]):
+                                if(k_tile_goalRow == i//self.dimension and j>k and self.state[i+j] - 1 < (self.state[i+k] - 1)): 
+                                    print(self.state[i+j],self.state[i+k])   
                                     conflict += 1
                                 k += 1
             if i < self.dimension:
                 j = i
                 for a in range(self.dimension):
-                    if(self.state[j] != 0 and self.state[j] != j+1):
+                    if(self.state[j] != 0):
                         tile_goalCol = (self.state[j] - 1) % self.dimension
                         if(tile_goalCol == i):
-                            k = j + self.dimension
+                            k = i
                             while k < (i + self.dimension * (self.dimension-1)):
                                 k_tile_goalCol = (self.state[k] - 1) % self.dimension
-                                if(self.state[k] != 0 and k_tile_goalCol == i and self.state[j] > self.state[k]):
+                                if(self.state[k] != 0 and k_tile_goalCol == i and j>k and self.state[j]-1 < self.state[k]-1):
+                                    print(self.state[j],self.state[k])
                                     conflict += 1
                                 k += self.dimension
-                    j += self.dimension
+                    j += self.dimension                
+            # if i % self.dimension == 0: #check row
+            #     for j in range(self.dimension):
+            #         if(self.state[i+j] != 0 and self.state[i+j] != i + j + 1): #if not zero tile and if the tile is not in the goal position
+            #             tile_goalRow = (self.state[i+j] - 1) // self.dimension #current tile's goal row
+            #             if(tile_goalRow == i): # if the tile is in the correct goal row
+            #                 k = j + 1
+            #                 while k < self.dimension: #compare with the other tiles in the row
+            #                     k_tile_goalRow = (self.state[i+k] - 1) // self.dimension #other tile's goal row
+            #                     if(k_tile_goalRow == i and self.state[i+j] > self.state[i+k]):
+            #                         conflict += 1
+            #                     k += 1
+            # if i < self.dimension:
+            #     j = i
+            #     for a in range(self.dimension):
+            #         if(self.state[j] != 0 and self.state[j] != j+1):
+            #             tile_goalCol = (self.state[j] - 1) % self.dimension
+            #             if(tile_goalCol == i):
+            #                 k = j + self.dimension
+            #                 while k < (i + self.dimension * (self.dimension-1)):
+            #                     k_tile_goalCol = (self.state[k] - 1) % self.dimension
+            #                     if(self.state[k] != 0 and k_tile_goalCol == i and self.state[j] > self.state[k]):
+            #                         conflict += 1
+            #                     k += self.dimension
+            #         j += self.dimension
             #print(conflict)
             if not self.state[i]:   # zero entry
                 continue
