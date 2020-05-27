@@ -207,6 +207,62 @@ class Node(object):
                 score += (abs(curr_row - right_row) + abs(curr_col - right_col) + 2 * conflict)
         return score
 
+    def new_ver(self):
+        score = 0
+        for i in range(len(self.state)):
+            if not self.state[i]:   # zero entry
+                continue
+            else:
+                # Mamhattan distance
+                right_position = self.state[i] - 1 
+                curr_row, curr_col = i // self.dimension, i % self.dimension
+                right_row, right_col = right_position // self.dimension, right_position % self.dimension
+                # Linear conflict
+                conflict = 0
+
+                # Ver3 Complete LC : O(n^2) where n is the dimension
+                if (i + 1) % self.dimension: # Exception last col
+                    if curr_row == right_row:
+                        conflict += sum(map(lambda x : self.state[i] > x and x != 0 and (x - 1) // self.dimension == right_row, \
+                                    self.state[i + 1 : curr_row * self.dimension + self.dimension]))
+                if i < self.dimension * (self.dimension - 1): # Except last row
+                    if curr_col == right_col:
+                        conflict += sum(map(lambda x : self.state[i] > self.state[x] and \
+                                    self.state[x] != 0 and (self.state[x] - 1) % self.dimension == right_col, \
+                                    range(i + self.dimension, self.dimension * (self.dimension - 1) + curr_col + 1, self.dimension)))
+
+                # Ver2 Incomplete LC stronger than Ver1 : O(1)
+                # curr = self.state[i]
+                # if (i + 1) % self.dimension: # Exception last col
+                #     right = self.state[i + 1]
+                #     if curr_row == right_row and curr > right and right != 0 and (right - 1) // self.dimension == right_row:
+                #         conflict += 1
+                # if i < self.dimension * (self.dimension - 1): # Except last row
+                #     down = self.state[i + self.dimension]
+                #     if curr_col == right_col and curr > down and down != 0 and down % self.dimension == right_col:
+                #         conflict += 1
+
+                # Ver1 Incomplete LC : O(1)
+                # if (i + 1) % self.dimension: # Exception last col
+                #     if self.state[i] == (i + 2) and self.state[i + 1] == (i + 1): 
+                #     # right value for curr_pos = i + 1 + 1, next_pos = i + 1 + 1 - 1 = i + 1
+                #         conflict += 1
+                # if i < self.dimension * (self.dimension - 1): # Except last row
+                #     if self.state[i] == (i + self.dimension + 1) and self.state[i + self.dimension] == (i + 1):
+                #     # right value for curr_pos = i + dimension + 1, next_pos = i + dimension + 1 - dimension = i + 1
+                #         conflict += 1
+    
+                # conflict += sum(map(lambda x :curr_row == right_row and self.state[i] < self.state[x] and i > x and self.state[x] != 0 and (self.state[x] - 1) // self.dimension == right_row, \
+                #             range(curr_row * self.dimension, curr_row * self.dimension + self.dimension)))
+
+                # conflict += sum(map(lambda x : curr_col == right_col and self.state[i] < self.state[x] and i > x and \
+                #             self.state[x] != 0 and (self.state[x] - 1) % self.dimension == curr_col, \
+                #             range(curr_col, self.dimension * (self.dimension - 1) + curr_col + 1, self.dimension)))
+
+                score += (abs(curr_row - right_row) + abs(curr_col - right_col) + 2 * conflict)
+
+        return score
+
     # def new_ver(self):
     #     score = 0
     #     conflict = 0
@@ -219,39 +275,7 @@ class Node(object):
     #             curr_row, curr_col = i // self.dimension, i % self.dimension
     #             right_row, right_col = right_position // self.dimension, right_position % self.dimension
     #             # Linear conflict
-                
 
-    #             # Ver3 Complete LC : O(n^2) where n is the dimension
-    #             # if (i + 1) % self.dimension: # Exception last col
-    #             #     if curr_row == right_row:
-    #             #         conflict += sum(map(lambda x : self.state[i] > x and x != 0 and (x - 1) // self.dimension == right_row, \
-    #             #              self.state[i + 1 : curr_row * self.dimension + self.dimension]))
-    #             # if i < self.dimension * (self.dimension - 1): # Except last row
-    #             #     if curr_col == right_col:
-    #             #         conflict += sum(map(lambda x : self.state[i] > self.state[x] and \
-    #             #         self.state[x] != 0 and (self.state[x] - 1) % self.dimension == right_col, \
-    #             #         range(i + self.dimension, self.dimension * (self.dimension - 1) + curr_col + 1, self.dimension)))
-
-    #             # Ver2 Incomplete LC stronger than Ver1 : O(1)
-    #             # curr = self.state[i]
-    #             # if (i + 1) % self.dimension: # Exception last col
-    #             #     right = self.state[i + 1]
-    #             #     if curr_row == right_row and curr > right and right != 0 and (right - 1) // self.dimension == right_row:
-    #             #         conflict += 1
-    #             # if i < self.dimension * (self.dimension - 1): # Except last row
-    #             #     down = self.state[i + self.dimension]
-    #             #     if curr_col == right_col and curr > down and down != 0 and down % self.dimension == right_col:
-    #             #         conflict += 1
-
-    #             # Ver1 Incomplete LC : O(1)
-    #             # if (i + 1) % self.dimension: # Exception last col
-    #             #     if self.state[i] == (i + 2) and self.state[i + 1] == (i + 1): 
-    #             #     # right value for curr_pos = i + 1 + 1, next_pos = i + 1 + 1 - 1 = i + 1
-    #             #         conflict += 1
-    #             # if i < self.dimension * (self.dimension - 1): # Except last row
-    #             #     if self.state[i] == (i + self.dimension + 1) and self.state[i + self.dimension] == (i + 1):
-    #             #     # right value for curr_pos = i + dimension + 1, next_pos = i + dimension + 1 - dimension = i + 1
-    #             #         conflict += 1
     #             conflict += sum(map(lambda x :curr_row == right_row and self.state[i] < self.state[x] and i > x and self.state[x] != 0 and (self.state[x] - 1) // self.dimension == right_row, \
     #                         range(curr_row * self.dimension, curr_row * self.dimension + self.dimension)))
 
@@ -260,32 +284,8 @@ class Node(object):
     #                         range(curr_col, self.dimension * (self.dimension - 1) + curr_col + 1, self.dimension)))
 
     #             score += (abs(curr_row - right_row) + abs(curr_col - right_col))
-
-    #     score += conflict*2
+    #     score += 2 * conflict
     #     return score
-    def new_ver(self):
-        score = 0
-        conflict = 0
-        for i in range(len(self.state)):
-            if not self.state[i]:   # zero entry
-                continue
-            else:
-                # Mamhattan distance
-                right_position = self.state[i] - 1 
-                curr_row, curr_col = i // self.dimension, i % self.dimension
-                right_row, right_col = right_position // self.dimension, right_position % self.dimension
-                # Linear conflict
-
-                conflict += sum(map(lambda x :curr_row == right_row and self.state[i] < self.state[x] and i > x and self.state[x] != 0 and (self.state[x] - 1) // self.dimension == right_row, \
-                            range(curr_row * self.dimension, curr_row * self.dimension + self.dimension)))
-
-                conflict += sum(map(lambda x : curr_col == right_col and self.state[i] < self.state[x] and i > x and \
-                            self.state[x] != 0 and (self.state[x] - 1) % self.dimension == curr_col, \
-                            range(curr_col, self.dimension * (self.dimension - 1) + curr_col + 1, self.dimension)))
-
-                score += (abs(curr_row - right_row) + abs(curr_col - right_col))
-        score += 2 * conflict
-        return score
         
     def h1(self):   # misplaced tiles
         count = 0
