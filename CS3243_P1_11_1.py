@@ -71,13 +71,14 @@ class Puzzle(object):
             new_solution.append("DOWN")
             new_zero_position = node.zero_position - self.dimension
         
+        # creating new state by tuple concatenation
         temp = node.state[new_zero_position]
         if new_zero_position < node.zero_position:
             new_state = node.state[:new_zero_position] + (0,) + node.state[new_zero_position + 1:node.zero_position] \
-             + (temp,) + node.state[node.zero_position + 1:]
+                        + (temp,) + node.state[node.zero_position + 1:]
         else:
             new_state = node.state[:node.zero_position] + (temp,) + node.state[node.zero_position + 1:new_zero_position] \
-             + (0,) + node.state[new_zero_position + 1:]
+                        + (0,) + node.state[new_zero_position + 1:]
         return Node(new_state, self.dimension, new_zero_position, node.path_cost + 1, new_solution)
     
     def zero_position(self, state):

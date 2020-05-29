@@ -3,8 +3,6 @@
 
 import os
 import sys
-from collections import deque
-from time import time
 from heapq import heappush, heappop, heapify
 # Running script on your own - given code can be run with the command:
 # python file.py, ./path/to/init_state.txt ./output/output.txt
@@ -37,22 +35,17 @@ class Puzzle(object):
         frontier = [node]
         heapify(frontier)
         explored = set()
-        # print(frontier)
         while frontier:
-            # print(frontier)
             node = heappop(frontier)
             if node.state in explored:
                 continue
             if self.goal_test(node.state):
-                # print(node.state)
                 return node.solution
             explored.add(node.state)
             for act in node.possible_actions:
-                # print(act)
                 child = self.child_node(node, act)
                 if (child.state not in explored):
                     heappush(frontier, child)
-        return ["FALSE"]   # return failure
 
     def goal_test(self, state):
         return self.goal_state == state
@@ -77,13 +70,14 @@ class Puzzle(object):
             new_solution.append("DOWN")
             new_zero_position = node.zero_position - self.dimension
         
+        # creating new state by tuple concatenation
         temp = node.state[new_zero_position]
         if new_zero_position < node.zero_position:
             new_state = node.state[:new_zero_position] + (0,) + node.state[new_zero_position + 1:node.zero_position] \
-             + (temp,) + node.state[node.zero_position + 1:]
+                        + (temp,) + node.state[node.zero_position + 1:]
         else:
             new_state = node.state[:node.zero_position] + (temp,) + node.state[node.zero_position + 1:new_zero_position] \
-             + (0,) + node.state[new_zero_position + 1:]
+                        + (0,) + node.state[new_zero_position + 1:]
 
         return Node(new_state, self.dimension, new_zero_position, node.path_cost + 1, new_solution)
     
@@ -144,7 +138,12 @@ class Node(object):
         ''' heuristic function '''
         return self.manhattan_distance_with_linear_conflict()
 
-    def manhattan_distance_with_linear_conflict(self):
+    def manhattan_distance_with_linear_conflict(self): 
+        ''' To explain why Manhattan + Linear Conflict is admissible: 
+        For each pair of numbers in conflict in a row/column atleast 2 additional steps to Manhattan Distance is required to move them to the right position.
+        So, the total value will be lesser than actual path cost.
+        Reference: Hansson, O., Mayer, A., & Yung, M. (1985). Generating Admissible Heuristics by Criticizing Solutions to Relaxed Models. Section 3.1. 
+                   Retrieved 29 May 2020, from https://doi.org/10.7916/D89Z9CW3'''
         score = 0
         for i in range(len(self.state)):
             if not self.state[i]:   # zero entry
@@ -157,7 +156,7 @@ class Node(object):
                 # Linear conflict
                 conflict = 0
                 # Complete LC : O(n^2) where n is the dimension
-                if (i + 1) % self.dimension: # Exception last col
+                if (i + 1) % self.dimension: # Except last col
                     if curr_row == right_row:
                         conflict += sum(map(lambda x : self.state[i] > x and x != 0 and (x - 1) // self.dimension == right_row, \
                                     self.state[i + 1 : curr_row * self.dimension + self.dimension]))
@@ -166,7 +165,7 @@ class Node(object):
                         conflict += sum(map(lambda x : self.state[i] > self.state[x] and \
                                     self.state[x] != 0 and (self.state[x] - 1) % self.dimension == right_col, \
                                     range(i + self.dimension, self.dimension * (self.dimension - 1) + curr_col + 1, self.dimension)))
-                score += (abs(curr_row - right_row) + abs(curr_col - right_col) + 2 * conflict)
+                score += (abs(curr_row - right_row) + abs(curr_col - right_col) + 2 * conflict) # Manhattan Distance + 2 * conflict
         return score
 
     def filter_actions(self, possible_actions):
@@ -225,21 +224,12 @@ if __name__ == "__main__":
         goal_state[(i-1)//n][(i-1)%n] = i
     goal_state[n - 1][n - 1] = 0
 
-    # Added to measure time
-    total_time = 0
-    for i in range(1):
-        puzzle = Puzzle(init_state, goal_state)
-        start = time()
-        ans = puzzle.solve()
-        end = time()
-        total_time += end - start
-    with open(sys.argv[2], 'a') as f:   # change from append mode to overwrite
+    puzzle = Puzzle(init_state, goal_state)
+    ans = puzzle.solve()
+
+    with open(sys.argv[2], 'a') as f:
         for answer in ans:
             f.write(answer+'\n')
-        f.write("average time taken : " + str(total_time) + "\n")
-        f.write("steps taken : " + str(len(ans)) + "\n")
-        f.write("file name: " + sys.argv[1] + "\n")
-        f.write("------------------------------------\n")
 
 
 

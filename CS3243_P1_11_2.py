@@ -3,8 +3,6 @@
 
 import os
 import sys
-from collections import deque
-from time import time
 from heapq import heappush, heappop, heapify
 # Running script on your own - given code can be run with the command:
 # python file.py, ./path/to/init_state.txt ./output/output.txt
@@ -30,29 +28,6 @@ class Puzzle(object):
             res += tuple(lst)
         return res
 
-    # you may add more functions if you think is useful
-    # def BFS(self):
-    #     node = Node(self.init_state, self.dimension, self.init_zero_position)
-    #     if not self.is_solvable(node):
-    #         return ["UNSOLVABLE"]
-    #     if self.goal_test(node.state):
-    #         return node.solution
-    #     frontier = deque([node])  # queue (insert left, pop right)
-    #     explored = set()
-    #     while frontier:
-    #         node = frontier.pop()
-    #         explored.add(node.state)
-    #         for act in node.possible_actions:
-    #             # print(act)
-    #             child = self.child_node(node, act)
-    #             if (child.state not in explored):
-    #                 explored.add(child.state)
-    #                 if self.goal_test(child.state):
-    #                     # print(child.path_cost)
-    #                     return child.solution
-    #                 frontier.appendleft(child)
-    #     return ["UNSOLVABLE"]   # return failure
-
     def A_STAR(self):
         node = Node(self.init_state, self.dimension, self.init_zero_position)
         if not self.is_solvable(node):
@@ -60,22 +35,17 @@ class Puzzle(object):
         frontier = [node]
         heapify(frontier)
         explored = set()
-        # print(frontier)
         while frontier:
-            # print(frontier)
             node = heappop(frontier)
             if node.state in explored:
                 continue
             if self.goal_test(node.state):
-                # print(node.state)
                 return node.solution
             explored.add(node.state)
             for act in node.possible_actions:
-                # print(act)
                 child = self.child_node(node, act)
                 if (child.state not in explored):
                     heappush(frontier, child)
-        return ["FALSE"]   # return failure
 
     def goal_test(self, state):
         return self.goal_state == state
@@ -86,9 +56,7 @@ class Puzzle(object):
 
         new_state = node.state
         new_solution = node.solution[:]
-        # print(new_state)
-        # print(node.zero_position)
-        # print(act)
+
         if act == "LEFT":
             new_solution.append("LEFT")
             new_zero_position = node.zero_position + 1
@@ -102,15 +70,15 @@ class Puzzle(object):
             new_solution.append("DOWN")
             new_zero_position = node.zero_position - self.dimension
         
-        # print(new_zero_position)
+        # creating new state by tuple concatenation
         temp = node.state[new_zero_position]
         if new_zero_position < node.zero_position:
             new_state = node.state[:new_zero_position] + (0,) + node.state[new_zero_position + 1:node.zero_position] \
-             + (temp,) + node.state[node.zero_position + 1:]
+                        + (temp,) + node.state[node.zero_position + 1:]
         else:
             new_state = node.state[:node.zero_position] + (temp,) + node.state[node.zero_position + 1:new_zero_position] \
-             + (0,) + node.state[new_zero_position + 1:]
-        # print(new_state)
+                        + (0,) + node.state[new_zero_position + 1:]
+
         return Node(new_state, self.dimension, new_zero_position, node.path_cost + 1, new_solution)
     
     def zero_position(self, state):
@@ -134,16 +102,12 @@ class Puzzle(object):
                     continue
                 if state[j] > state[i]:
                     count += 1
-        # print(count)
         return count
 
     def is_solvable(self, node):
         if len(node.state) % 2:   # n is odd
-            # print(self.inversion(node.state))
             return False if self.inversion(node.state) % 2 else True 
         else:
-            # print(self.inversion(node.state))
-            # print(node.zero_position[0])
             return  (self.inversion(node.state) + node.zero_position // self.dimension) % 2
 
 
@@ -172,7 +136,7 @@ class Node(object):
     
     def h(self):
         ''' heuristic function '''
-        return self.manhattan_distance_with_linear_conflict()
+        return self.manhattan_distance()
     
     def manhattan_distance(self):
         distance = 0
@@ -185,41 +149,6 @@ class Node(object):
                 right_row, right_col = right_position // self.dimension, right_position % self.dimension
                 distance += (abs(curr_row - right_row) + abs(curr_col - right_col))
         return distance
-
-    def manhattan_distance_with_linear_conflict(self):
-        score = 0
-        for i in range(len(self.state)):
-            if not self.state[i]:   # zero entry
-                continue
-            else:
-                # Mamhattan distance
-                right_position = self.state[i] - 1 
-                curr_row, curr_col = i // self.dimension, i % self.dimension
-                right_row, right_col = right_position // self.dimension, right_position % self.dimension
-                # Linear conflict
-                conflict = 0
-                if (i + 1) % self.dimension:
-                    if self.state[i] == (i + 2) and self.state[i + 1] == (i + 1):
-                        conflict += 1
-                if i < self.dimension * (self.dimension - 1):
-                    if self.state[i] == (i + 1 + self.dimension) and self.state[i + self.dimension] == (i + 1):
-                        conflict += 1
-
-                score += (abs(curr_row - right_row) + abs(curr_col - right_col) + 2 * conflict)
-        return score
-
-    def h1(self):   # misplaced tiles
-        count = 0
-        for i in range(len(self.state)):
-            if not self.state[i]:   # zero entry
-                continue
-            else:
-                if (self.state[i] - 1) != i:
-                    count += 1
-        return count
-    
-    def h2(self):
-        return
 
     def filter_actions(self, possible_actions):
         ''' Filter impossible actions based on 
@@ -278,19 +207,12 @@ if __name__ == "__main__":
         goal_state[(i-1)//n][(i-1)%n] = i
     goal_state[n - 1][n - 1] = 0
 
-    # Added to measure time
     puzzle = Puzzle(init_state, goal_state)
-    start = time()
     ans = puzzle.solve()
-    end = time()
-    time_taken = end - start
 
-    with open(sys.argv[2], 'a') as f:   # change from append mode to overwrite
+    with open(sys.argv[2], 'a') as f:
         for answer in ans:
             f.write(answer+'\n')
-        f.write("time taken : " + str(time_taken) + "\n")
-        f.write("steps taken : " + str(len(ans)) + "\n")
-        f.write("------------------------------------\n")
 
 
 
